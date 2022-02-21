@@ -46,11 +46,45 @@ export class SpendingsService {
     return;
   }
 
-  update(id: number, updateSpendingDto: UpdateSpendingDto) {
-    return `This action updates a #${id} spending`;
+  async update(
+    id: number,
+    updateSpendingDto: UpdateSpendingDto,
+    @Res() response: Response,
+  ) {
+    try {
+      await prisma.spendings.update({
+        where: { id: id },
+        data: { ...updateSpendingDto },
+      });
+      return response.json({
+        sucesso: 0,
+        descricao: `Spending ${id} updated successfully`,
+      });
+    } catch (error) {
+      console.log(error);
+      return response.json({
+        descricao: `Spending couldn't be deleted`,
+        erro: error,
+      });
+    }
   }
 
-  remove(id: number) {
+  async remove(id: number, @Res() response: Response) {
+    try {
+      await prisma.spendings.delete({
+        where: { id: id },
+      });
+      return response.json({
+        sucesso: 0,
+        descricao: `Spending ${id} deleted successfully`,
+      });
+    } catch (error) {
+      console.log(error);
+      return response.json({
+        descricao: `Spending couldn't be deleted`,
+        erro: error,
+      });
+    }
     return `This action removes a #${id} spending`;
   }
 }

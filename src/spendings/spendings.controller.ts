@@ -39,12 +39,13 @@ export class SpendingsController {
   update(
     @Param('id') id: string,
     @Body() updateSpendingDto: UpdateSpendingDto,
+    @Res() response: Response,
   ) {
-    return this.spendingsService.update(+id, updateSpendingDto);
+    return this.spendingsService.update(+id, updateSpendingDto, response);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.spendingsService.remove(+id);
+  remove(@Param('id') id: string, @Res() response: Response) {
+    return this.spendingsService.remove(+id, response);
   }
 }
