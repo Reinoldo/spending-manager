@@ -1,20 +1,21 @@
 import { Injectable, Res } from '@nestjs/common';
 import { CreateSpendingDto } from './dto/create-spending.dto';
 import { UpdateSpendingDto } from './dto/update-spending.dto';
-import { PrismaClient } from '@prisma/client';
-
+import { Prisma, PrismaClient, Spendings } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
 import { Response } from 'express';
-
-const prisma = new PrismaClient();
+import { Spending } from './entities/spending.entity';
 
 @Injectable()
 export class SpendingsService {
+  constructor(private prisma: PrismaService) {}
+
   async create(
     createSpendingDto: CreateSpendingDto,
     @Res() response: Response,
   ) {
     try {
-      await prisma.spendings.create({
+      await this.prisma.spendings.create({
         data: {
           ...createSpendingDto,
         },
@@ -34,8 +35,8 @@ export class SpendingsService {
 
   async findAll() {
     try {
-      const allSpendings = await prisma.spendings.findMany();
-      await prisma.$disconnect();
+      const allSpendings = await this.prisma.spendings.findMany();
+      await this.prisma.$disconnect();
       return [allSpendings];
     } catch (error) {
       console.log(error);
@@ -46,45 +47,22 @@ export class SpendingsService {
     return;
   }
 
-  async update(
-    id: number,
-    updateSpendingDto: UpdateSpendingDto,
-    @Res() response: Response,
-  ) {
-    try {
-      await prisma.spendings.update({
-        where: { id: id },
-        data: { ...updateSpendingDto },
-      });
-      return response.json({
-        sucesso: 0,
-        descricao: `Spending ${id} updated successfully`,
-      });
-    } catch (error) {
-      console.log(error);
-      return response.json({
-        descricao: `Spending couldn't be deleted`,
-        erro: error,
-      });
-    }
+  async update(params: {
+    where: Prisma.SpendingsWhereUniqueInput;
+    data: Prisma.SpendingsUpdateInput;
+  }): Promise<Spendings> {
+    const { where, data } = params;
+    return this.prisma.spendings.update({
+      data,
+      where,
+    });
   }
 
-  async remove(id: number, @Res() response: Response) {
+  async delete(where: Prisma.SpendingsWhereUniqueInput): Promise<Spendings> {
     try {
-      await prisma.spendings.delete({
-        where: { id: id },
+      return this.prisma.spendings.delete({
+        where,
       });
-      return response.json({
-        sucesso: 0,
-        descricao: `Spending ${id} deleted successfully`,
-      });
-    } catch (error) {
-      console.log(error);
-      return response.json({
-        descricao: `Spending couldn't be deleted`,
-        erro: error,
-      });
-    }
-    return `This action removes a #${id} spending`;
+    } catch (error) {}
   }
 }
