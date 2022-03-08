@@ -12,6 +12,7 @@ import { Response } from 'express';
 import { SpendingsService } from './spendings.service';
 import { CreateSpendingDto } from './dto/create-spending.dto';
 import { UpdateSpendingDto } from './dto/update-spending.dto';
+import { Spendings as SpendingsModel } from '@prisma/client';
 
 @Controller('spendings')
 export class SpendingsController {
@@ -36,15 +37,25 @@ export class SpendingsController {
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateSpendingDto: UpdateSpendingDto,
-  ) {
-    return this.spendingsService.update(+id, updateSpendingDto);
+    @Res() response: Response,
+  ): Promise<SpendingsModel> {
+    return this.spendingsService.update({
+      where: { id: Number(id) },
+      data: updateSpendingDto,
+    });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.spendingsService.remove(+id);
+  async remove(@Param('id') id: string, @Res() response: Response) {
+    try {
+      const result = this.spendingsService.delete({ id: Number(id) });
+
+      return result;
+    } catch (error) {
+      return response.json({ descricao: 'teste' });
+    }
   }
 }
